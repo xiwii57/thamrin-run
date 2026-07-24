@@ -2,12 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Calendar, QrCode, Trophy, LogOut, X } from 'lucide-react'
+import { LayoutDashboard, Calendar, Users, QrCode, Trophy, LogOut, X } from 'lucide-react'
 import { logout } from '@/features/auth/actions'
 
+
 const menu = [
-  { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+{ href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
 { href: '/admin/events', label: 'Event', icon: Calendar },
+{ href: '/admin/participants', label: 'Peserta', icon: Users },
 { href: '/admin/checkin', label: 'Check-in', icon: QrCode },
 { href: '/admin/results', label: 'Hasil & Leaderboard', icon: Trophy },
 ]
@@ -27,9 +29,8 @@ export function AdminSidebar({
     <aside className="flex h-full w-64 flex-col border-r border-border bg-surface p-4">
     <div className="mb-8 flex items-center justify-between px-2">
     <div className="flex items-center gap-2">
-    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-sm font-bold text-white">
-    T
-    </div>
+    {/* eslint-disable-next-line @next/next/no-img-element */}
+    <img src="/run.jpeg" alt="Thamrin Run" className="h-9 w-9 rounded-lg object-cover" />
     <p className="text-sm font-semibold text-ink">Thamrin Run</p>
     </div>
     {onClose && (

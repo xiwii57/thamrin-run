@@ -9,7 +9,7 @@ export async function createPaymentTransaction(registrationId: string) {
 
     const { data: registration, error } = await supabase
     .from('registrations')
-    .select('*, events(name, price)')
+    .select('*, events(name, price, slug)')
     .eq('id', registrationId)
     .single()
 
@@ -39,7 +39,7 @@ export async function createPaymentTransaction(registrationId: string) {
                 },
             ],
             callbacks: {
-                finish: `${process.env.NEXT_PUBLIC_APP_URL}/pendaftaran-berhasil?event=${registration.event_id}`,
+                finish: `${process.env.NEXT_PUBLIC_APP_URL}/tiket/${registration.id}`,
             },
         })
 

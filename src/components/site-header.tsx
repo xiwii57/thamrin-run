@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
 
 const links = [
-    { href: '#events', label: 'Event' },
-{ href: '#tentang', label: 'Tentang' },
+    { href: '/#events', label: 'Event' },
+{ href: '/#tentang', label: 'Tentang' },
 ]
 
 export function SiteHeader() {

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Search, CheckCircle2, Clock, XCircle } from 'lucide-react'
 import { getRegistrationsByEmail } from '@/features/registration/queries'
+import { TicketUnlock } from '@/components/ticket/ticket-unlock'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 
@@ -27,7 +28,7 @@ export default async function CheckStatusPage({
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Cek Status</p>
         <h1 className="mt-2 text-2xl font-bold text-ink sm:text-3xl">Status Pendaftaran</h1>
         <p className="mt-2 text-sm text-muted">
-        Masukkan email yang kamu gunakan saat mendaftar untuk melihat status pendaftaranmu.
+        Masukkan email yang kamu gunakan saat mendaftar untuk melihat status dan tiketmu.
         </p>
         </div>
 
@@ -52,41 +53,51 @@ export default async function CheckStatusPage({
         {email && (
             <div className="mt-8">
             {results && results.length > 0 ? (
-                <div className="space-y-3">
+                <div className="space-y-4">
                 {results.map((reg) => {
                     const config = statusConfig[reg.status as keyof typeof statusConfig] ?? statusConfig.pending
                     const Icon = config.icon
                     const event = Array.isArray(reg.events) ? reg.events[0] : reg.events
+                    const isPaid = reg.status === 'paid'
 
-                    return (
-                        <div key={reg.id} className="rounded-xl border border-border bg-surface p-5">
-                        <div className="flex items-start justify-between gap-3">
-                        <div>
-                        <p className="font-semibold text-ink">{event?.name}</p>
-                        <p className="mt-0.5 text-sm text-muted">
-                        {reg.name} {reg.category ? `— ${reg.category}` : ''}
-                        </p>
-                        </div>
-                        <span className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${config.className}`}>
-                        <Icon size={13} />
-                        {config.label}
-                        </span>
-                        </div>
+                return (
+                    <div key={reg.id} className="overflow-hidden rounded-xl border border-border bg-surface">
+                    <div className="p-5">
+                    <div className="flex items-start justify-between gap-3">
+                    <div>
+                    <p className="font-semibold text-ink">{event?.name}</p>
+                    <p className="mt-0.5 text-sm text-muted">
+                    {reg.name} {reg.category ? `— ${reg.category}` : ''}
+                    </p>
+                    </div>
+                    <span className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${config.className}`}>
+                    <Icon size={13} />
+                    {config.label}
+                    </span>
+                    </div>
 
-                        {reg.bib_number && (
-                            <div className="mt-4 flex items-center gap-2 border-t border-border pt-4">
-                            <span className="text-xs text-muted">Nomor Bib:</span>
-                            <span className="font-display text-lg text-accent">{reg.bib_number}</span>
-                            </div>
-                        )}
-
-                        {event?.slug && (
-                            <Link href={`/events/${event.slug}`} className="mt-3 inline-block text-xs font-medium text-accent hover:underline">
-                            Lihat detail event →
-                            </Link>
-                        )}
+                    {reg.bib_number && (
+                        <div className="mt-4 flex items-center gap-2 border-t border-border pt-4">
+                        <span className="text-xs text-muted">Nomor Bib:</span>
+                        <span className="font-display text-lg text-accent">{reg.bib_number}</span>
                         </div>
-                    )
+                    )}
+
+                    {event?.slug && (
+                        <Link href={`/events/${event.slug}`} className="mt-3 inline-block text-xs font-medium text-accent hover:underline">
+                        Lihat detail event →
+                        </Link>
+                    )}
+                    </div>
+
+                    {isPaid && (
+                        <TicketUnlock
+                        registrationId={reg.id}
+                        fileName={`tiket-${event?.slug}-${reg.bib_number ?? reg.id.slice(0, 8)}.png`}
+                        />
+                    )}
+                    </div>
+                )
                 })}
                 </div>
             ) : (

@@ -15,7 +15,7 @@ export default async function LoginPage({
         {/* Logo */}
         <div className="flex justify-center">
         <Image
-        src="/logo.svg"
+        src="/run.jpeg"
         alt="Thamrin Run"
         width={96}
         height={96}

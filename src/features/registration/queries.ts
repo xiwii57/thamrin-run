@@ -20,7 +20,7 @@ export async function getRegistrationsByEmail(email: string) {
 
     const { data, error } = await supabase
     .from('registrations')
-    .select('id, name, email, category, status, bib_number, created_at, events(name, slug, event_date)')
+    .select('id, name, email, category, status, bib_number, created_at, events(name, slug, event_date, location, poster_url)')
     .eq('email', email.trim().toLowerCase())
     .order('created_at', { ascending: false })
 

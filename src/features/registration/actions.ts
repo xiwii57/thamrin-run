@@ -5,6 +5,8 @@ import { generateSessionToken } from '@/lib/token'
 import { registrationSchema } from './schema'
 import { redirect } from 'next/navigation'
 import { createPaymentTransaction } from '@/features/payment/actions'
+import { cookies } from 'next/headers'
+import { generateCheckinCode } from '@/lib/qr-token'
 
 const SESSION_DURATION_MS = 20 * 60 * 1000 // 20 menit
 
@@ -72,6 +74,19 @@ export async function submitRegistration(token: string, formData: FormData) {
 
     // sesi sudah dipakai, hapus supaya token ini tidak bisa dipakai ulang
     await supabase.from('registration_sessions').delete().eq('token', token)
+
+    // Cookie akses tiket — httpOnly (tidak bisa dibaca/diubah lewat JS) dan signed
+    // (nilainya mengandung tanda tangan HMAC yang cuma bisa dibuat server).
+    // Ini yang mencegah IDOR: walau orang ubah ID di URL /tiket/[id], tanpa
+    // cookie yang valid dan cocok, akses tetap ditolak.
+    const cookieStore = await cookies()
+    cookieStore.set(`ticket_access_${newRegistration!.id}`, generateCheckinCode(newRegistration!.id), {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 365, // 1 tahun
+        path: '/',
+        })
 
     const paymentUrl = await createPaymentTransaction(newRegistration!.id)
     redirect(paymentUrl)
