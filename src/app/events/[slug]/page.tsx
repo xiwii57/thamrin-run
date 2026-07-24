@@ -28,7 +28,7 @@ export default async function EventDetailPage({
 
         const remaining = Math.max(event.quota - event.registered_count, 0)
         const isFull = remaining === 0
-        const eventUrl = `https://thamrinrun.com/events/${event.slug}` // sesuaikan domain saat sudah live
+        const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${event.slug}`
 
         return (
             <div className="flex min-h-screen flex-col bg-canvas">
