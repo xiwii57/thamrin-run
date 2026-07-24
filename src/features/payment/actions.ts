@@ -4,7 +4,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createSnapClient } from '@/lib/midtrans'
 
-export async function createPaymentTransaction(registrationId: string) {
+export async function createSnapToken(registrationId: string) {
     const supabase = createAdminClient()
 
     const { data: registration, error } = await supabase
@@ -50,5 +50,5 @@ export async function createPaymentTransaction(registrationId: string) {
             status: 'pending',
         })
 
-        return transaction.redirect_url as string
+        return transaction.token as string
 }
