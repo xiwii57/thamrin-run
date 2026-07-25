@@ -34,6 +34,7 @@ export function RegistrationForm({
     const [isPending, startTransition] = useTransition()
     const [snapToken, setSnapToken] = useState<string | null>(null)
     const [registrationId, setRegistrationId] = useState<string | null>(null)
+    const [accessCode, setAccessCode] = useState<string | null>(null)
 
     const date = new Date(event.event_date)
     const fullDate = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -52,6 +53,7 @@ export function RegistrationForm({
                 if (result.ok) {
                     setSnapToken(result.snapToken)
                     setRegistrationId(result.registrationId)
+                    setAccessCode(result.accessCode)
                     setStep('payment')
                 } else {
                     setError(result.error)
@@ -155,8 +157,8 @@ export function RegistrationForm({
             <h2 className="text-sm font-semibold text-ink">Metode Pembayaran</h2>
             <p className="mt-1 text-xs text-muted">Pembayaran diproses aman melalui payment gateway</p>
             </div>
-            {snapToken && registrationId && (
-                <SnapEmbed snapToken={snapToken} registrationId={registrationId} />
+            {snapToken && registrationId && accessCode && (
+                <SnapEmbed snapToken={snapToken} registrationId={registrationId} accessCode={accessCode} />
             )}
             </div>
         )}

@@ -22,20 +22,37 @@ declare global {
     }
 }
 
-export function SnapEmbed({ snapToken, registrationId }: { snapToken: string; registrationId: string }) {
+export function SnapEmbed({
+    snapToken,
+    registrationId,
+    accessCode,
+}: {
+    snapToken: string
+    registrationId: string
+    accessCode: string
+}) {
     const router = useRouter()
     const [scriptReady, setScriptReady] = useState(false)
+
+    async function goToTicket() {
+        await fetch('/api/ticket/grant-access', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ registrationId, accessCode }),
+        })
+        router.push(`/tiket/${registrationId}`)
+    }
 
     useEffect(() => {
         if (!scriptReady || typeof window === 'undefined' || !window.snap) return
 
             window.snap.embed(snapToken, {
                 embedId: 'snap-container',
-                onSuccess: () => router.push(`/tiket/${registrationId}`),
-                              onPending: () => router.push(`/tiket/${registrationId}`),
-                              onError: () => router.refresh(),
+                onSuccess: goToTicket,
+                onPending: goToTicket,
+                onError: () => router.refresh(),
             })
-    }, [scriptReady, snapToken, registrationId, router])
+    }, [scriptReady, snapToken, registrationId, accessCode])
 
     return (
         <div className="p-6">
@@ -52,7 +69,7 @@ export function SnapEmbed({ snapToken, registrationId }: { snapToken: string; re
             </div>
         )}
 
-        <div id="snap-container" className="min-h-[500px]" />
+        <div id="snap-container"/>
         </div>
     )
 }

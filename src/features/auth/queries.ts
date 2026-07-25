@@ -3,7 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function getCurrentAdmin() {
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError) return null
 
     if (!user) return null
 
