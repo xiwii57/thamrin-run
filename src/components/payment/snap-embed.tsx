@@ -52,6 +52,10 @@ export function SnapEmbed({
                 onPending: goToTicket,
                 onError: () => router.refresh(),
             })
+            const timer = setTimeout(() => {
+                window.dispatchEvent(new Event('resize'))
+            }, 300)
+            return () => clearTimeout(timer)
     }, [scriptReady, snapToken, registrationId, accessCode])
 
     return (
@@ -69,7 +73,7 @@ export function SnapEmbed({
             </div>
         )}
 
-        <div id="snap-container"/>
+        <div id="snap-container" className="w-full min-h-[600px]" />
         </div>
     )
 }
