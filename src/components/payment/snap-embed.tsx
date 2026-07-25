@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Script from 'next/script'
-import { Loader2, ArrowRight } from 'lucide-react'
+import { Loader2, ArrowRight, CreditCard } from 'lucide-react'
 
 declare global {
     interface Window {
@@ -34,6 +34,8 @@ export function SnapEmbed({
     const router = useRouter()
     const [scriptReady, setScriptReady] = useState(false)
     const [showManualLink, setShowManualLink] = useState(false)
+    const [isClosed, setIsClosed] = useState(false)
+    const [reopenKey, setReopenKey] = useState(0) // ganti key -> paksa div #snap-container dibuat ulang
 
     async function grantAccess() {
         await fetch('/api/ticket/grant-access', {
@@ -48,30 +50,32 @@ export function SnapEmbed({
         router.push(`/tiket/${registrationId}`)
     }
 
-    useEffect(() => {
-        if (!scriptReady || typeof window === 'undefined' || !window.snap) return
+    const embedSnap = useCallback(() => {
+        if (typeof window === 'undefined' || !window.snap) return
 
             window.snap.embed(snapToken, {
                 embedId: 'snap-container',
-                // Pembayaran instan yang benar-benar tuntas (kartu kredit, dsb) -> langsung pindah
                 onSuccess: goToTicket,
-                // VA/QRIS baru DIBUAT di sini, bukan berarti sudah dibayar.
-                // Biarkan widget tetap terbuka supaya user masih bisa lihat instruksi
-                // bayar atau ganti metode pembayaran di dalam Snap itu sendiri.
-                // Cukup siapkan akses tiket di background + munculkan opsi manual.
                 onPending: async () => {
                     await grantAccess()
                     setShowManualLink(true)
                 },
                 onError: () => router.refresh(),
+                              onClose: () => setIsClosed(true),
             })
 
-            const timer = setTimeout(() => {
-                window.dispatchEvent(new Event('resize'))
-            }, 300)
+            setTimeout(() => window.dispatchEvent(new Event('resize')), 300)
+    }, [snapToken, registrationId, accessCode])
 
-            return () => clearTimeout(timer)
-    }, [scriptReady, snapToken, registrationId, accessCode])
+    useEffect(() => {
+        if (!scriptReady) return
+            embedSnap()
+    }, [scriptReady, reopenKey, embedSnap])
+
+    function handleReopen() {
+        setIsClosed(false)
+        setReopenKey((k) => k + 1) // trigger useEffect di atas untuk embed ulang
+    }
 
     return (
         <div className="p-6">
@@ -88,9 +92,27 @@ export function SnapEmbed({
             </div>
         )}
 
-        <div id="snap-container" className="w-full min-h-[600px]" />
+        {isClosed ? (
+            <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border bg-canvas py-16 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-soft text-accent">
+            <CreditCard size={22} />
+            </div>
+            <div>
+            <p className="text-sm font-medium text-ink">Jendela pembayaran ditutup</p>
+            <p className="mt-1 text-sm text-muted">Kamu bisa buka lagi untuk memilih atau mengganti metode pembayaran.</p>
+            </div>
+            <button
+            onClick={handleReopen}
+            className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-dark"
+            >
+            Pilih Metode Pembayaran
+            </button>
+            </div>
+        ) : (
+            <div key={reopenKey} id="snap-container" className="w-full min-h-[600px]" />
+        )}
 
-        {showManualLink && (
+        {showManualLink && !isClosed && (
             <div className="mt-4 flex items-center justify-between rounded-lg border border-border bg-canvas px-4 py-3">
             <p className="text-sm text-muted">
             Sudah dapat kode/nomor pembayaran? Kamu bisa lihat status tiket kapan saja.
