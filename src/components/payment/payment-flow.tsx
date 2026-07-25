@@ -139,8 +139,15 @@ export function PaymentFlow({ registrationId, accessCode }: { registrationId: st
     }
 
     return (
-        <div className="p-6">
+        <div className="relative p-6">
         {error && <p className="mb-4 rounded-lg bg-danger-soft px-3 py-2.5 text-sm text-danger">{error}</p>}
+        {isPending && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-2xl bg-surface/90 backdrop-blur sm">
+                <Loader2 size={28} className="animate-spin text-accent" />
+                <p className="text-sm font-medium text-ink">Memproses pembayaran...</p>
+                <p className="text-xs text-muted">Jangan tutup atau refresh halaman ini</p>
+            </div>
+        )}
 
         <div className="space-y-5">
         <div>

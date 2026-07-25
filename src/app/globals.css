@@ -47,9 +47,13 @@ body {
   color: var(--foreground);
 }
 
-#snap-container iframe {
-width: 100% !important;
-height: 100% !important;
-min-height: 600px;
-border: none !important;
+@keyframes scan-line {
+  0% { top: 10%; opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { top: 85%; opacity: 1; }
+}
+
+.animate-scan-line {
+  position: absolute;
+  animation: scan-line 1.8s ease-in-out infinite alternate;
 }

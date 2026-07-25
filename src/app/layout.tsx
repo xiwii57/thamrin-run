@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Unbounded } from "next/font/google";
+import { Suspense } from "react"
+import { RouteProgressBar } from "@/components/ui/route-progress-bar"
 import "./globals.css";
 
 const geistSans = Geist({
@@ -33,6 +35,9 @@ export default function RootLayout({
     <body
     className={`${geistSans.variable} ${geistMono.variable} ${unbounded.variable} antialiased`}
     >
+    <Suspense fallback={null}>
+      <RouteProgressBar />
+    </Suspense>
     {children}
     </body>
     </html>

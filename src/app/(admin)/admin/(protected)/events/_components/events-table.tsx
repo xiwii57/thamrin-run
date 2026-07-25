@@ -1,10 +1,11 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useTransition,useState } from 'react'
 import Link from 'next/link'
 import { Pencil, Trash2 } from 'lucide-react'
 import { deleteEvent } from '@/features/events/actions'
 import { formatRupiahFull, formatDate } from '@/lib/format'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 const statusStyle: Record<string, string> = {
   draft: 'bg-canvas text-muted border border-border',
@@ -32,10 +33,19 @@ type EventRow = {
 
 export function EventsTable({ events }: { events: EventRow[] }) {
   const [isPending, startTransition] = useTransition()
+  const [target, setTarget] = useState<{ id: string; name: string } | null>(null)
 
-  function handleDelete(id: string, name: string) {
-    if (!confirm(`Hapus event "${name}"? Tindakan ini tidak bisa dibatalkan.`)) return
-      startTransition(() => deleteEvent(id))
+
+  function requestDelete(id: string, name: string) {
+    setTarget({ id, name })
+  }
+
+  function confirmDelete() {
+      if (!target) return
+      startTransition(async () => {
+        await deleteEvent(target.id)
+        setTarget(null)
+      })
   }
 
   return (
@@ -77,7 +87,7 @@ export function EventsTable({ events }: { events: EventRow[] }) {
       <Pencil size={15} />
       </Link>
       <button
-      onClick={() => handleDelete(event.id, event.name)}
+      onClick={() => requestDelete(event.id, event.name)}
       disabled={isPending}
       className="text-muted transition hover:text-danger disabled:opacity-50"
       >
@@ -89,6 +99,14 @@ export function EventsTable({ events }: { events: EventRow[] }) {
     ))}
     </tbody>
     </table>
+    <ConfirmDialog
+    open={!!target}
+    title="Hapus Event Ini?"
+    description={`Event "${target?.name}" akan dihapus permanen beserta semua data pendaftaran yang terkait. Tindakan ini tidak bisa dibatalkan.`}
+    isLoading={isPending}
+    onConfirm={confirmDelete}
+    onCancel={() => setTarget(null)}
+    />
     </div>
 
     {/* Mobile: card list */}
@@ -128,7 +146,7 @@ export function EventsTable({ events }: { events: EventRow[] }) {
       <Pencil size={14} /> Edit
       </Link>
       <button
-      onClick={() => handleDelete(event.id, event.name)}
+      onClick={() => requestDelete(event.id, event.name)}
       disabled={isPending}
       className="flex items-center gap-1.5 text-sm font-medium text-danger disabled:opacity-50"
       >
