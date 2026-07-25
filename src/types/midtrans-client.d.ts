@@ -1,8 +1,8 @@
 declare module 'midtrans-client' {
-    interface SnapConfig {
+    interface MidtransConfig {
         isProduction: boolean
         serverKey: string
-        clientKey?: string
+        clientKey: string
     }
 
     interface TransactionDetails {
@@ -10,44 +10,48 @@ declare module 'midtrans-client' {
         gross_amount: number
     }
 
-    interface CreateTransactionParams {
+    interface CustomerDetails {
+        first_name?: string
+        email?: string
+        phone?: string
+    }
+
+    interface ItemDetail {
+        id: string
+        price: number
+        quantity: number
+        name: string
+    }
+
+    interface ChargePayload {
+        payment_type: string
         transaction_details: TransactionDetails
-        [key: string]: unknown
+        customer_details?: CustomerDetails
+        item_details?: ItemDetail[]
+        bank_transfer?: { bank: string }
+        qris?: Record<string, never>
     }
 
-    interface CreateTransactionResponse {
-        token: string
-        redirect_url: string
+    interface ChargeAction {
+        name: string
+        method: string
+        url: string
     }
 
-    class Snap {
-        constructor(config: SnapConfig)
-        createTransaction(
-            params: CreateTransactionParams
-        ): Promise<CreateTransactionResponse>
-        createTransactionToken(params: CreateTransactionParams): Promise<string>
-        createTransactionRedirectUrl(
-            params: CreateTransactionParams
-        ): Promise<string>
-        transaction: {
-            status(orderId: string): Promise<Record<string, unknown>>
-            notification(payload: unknown): Promise<Record<string, unknown>>
-        }
+    interface ChargeResult {
+        transaction_status: string
+        order_id: string
+        va_numbers?: { bank: string; va_number: string }[]
+        permata_va_number?: string
+        actions?: ChargeAction[]
+        expiry_time?: string
     }
 
     class CoreApi {
-        constructor(config: SnapConfig)
-        charge(params: Record<string, unknown>): Promise<Record<string, unknown>>
-        transaction: {
-            status(orderId: string): Promise<Record<string, unknown>>
-            notification(payload: unknown): Promise<Record<string, unknown>>
-        }
+        constructor(config: MidtransConfig)
+        charge(payload: ChargePayload): Promise<ChargeResult>
     }
 
-    const midtransClient: {
-        Snap: typeof Snap
-        CoreApi: typeof CoreApi
-    }
-
-    export default midtransClient
+    const _default: { CoreApi: typeof CoreApi }
+    export = _default
 }

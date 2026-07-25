@@ -4,7 +4,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { generateSessionToken } from '@/lib/token'
 import { registrationSchema } from './schema'
 import { redirect } from 'next/navigation'
-import { createSnapToken } from '@/features/payment/actions'
 import { generateCheckinCode } from '@/lib/qr-token'
 
 const SESSION_DURATION_MS = 20 * 60 * 1000 // 20 menit
@@ -26,7 +25,7 @@ export async function createRegistrationSession(eventId: string) {
 }
 
 type SubmitResult =
-| { ok: true; snapToken: string; registrationId: string; accessCode: string }
+| { ok: true; registrationId: string; accessCode: string }
 | { ok: false; error: string }
 
 export async function submitRegistration(token: string, formData: FormData): Promise<SubmitResult> {
@@ -55,13 +54,20 @@ export async function submitRegistration(token: string, formData: FormData): Pro
         return { ok: false, error: parsed.error.issues[0].message }
     }
 
+    function normalizePhone(phone: string) {
+        const digits = phone.replace(/\D/g, '')
+        if (digits.startsWith('62')) return digits
+        if (digits.startsWith('0')) return '62' + digits.slice(1)
+        return '62' + digits
+    }
+
     const { data: newRegistration, error } = await supabase
     .from('registrations')
     .insert({
         event_id: session.event_id,
         name: parsed.data.name,
         email: parsed.data.email.trim().toLowerCase(),
-            phone: parsed.data.phone,
+            phone: normalizePhone(parsed.data.phone),
             dob: parsed.data.dob,
             gender: parsed.data.gender,
             category: parsed.data.category || null,
@@ -76,11 +82,8 @@ export async function submitRegistration(token: string, formData: FormData): Pro
 
     await supabase.from('registration_sessions').delete().eq('token', token)
 
-    const snapToken = await createSnapToken(newRegistration.id)
-
     return {
         ok: true,
-        snapToken,
         registrationId: newRegistration.id,
         accessCode: generateCheckinCode(newRegistration.id),
     }

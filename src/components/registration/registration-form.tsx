@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, ShieldCheck } from 'lucide-react'
 import { CountdownTimer } from './countdown-timer'
-import { SnapEmbed } from '@/components/payment/snap-embed'
+import { PaymentFlow } from '@/components/payment/payment-flow'
 import { submitRegistration } from '@/features/registration/actions'
 import { formatRupiahFull } from '@/lib/format'
 
@@ -32,7 +32,6 @@ export function RegistrationForm({
     const [agreed, setAgreed] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [isPending, startTransition] = useTransition()
-    const [snapToken, setSnapToken] = useState<string | null>(null)
     const [registrationId, setRegistrationId] = useState<string | null>(null)
     const [accessCode, setAccessCode] = useState<string | null>(null)
 
@@ -51,7 +50,6 @@ export function RegistrationForm({
             startTransition(async () => {
                 const result = await submitRegistration(token, formData)
                 if (result.ok) {
-                    setSnapToken(result.snapToken)
                     setRegistrationId(result.registrationId)
                     setAccessCode(result.accessCode)
                     setStep('payment')
@@ -101,8 +99,22 @@ export function RegistrationForm({
             <label className="text-xs font-medium uppercase tracking-wide text-muted">Nomor HP</label>
             <div className="flex">
             <span className="flex items-center rounded-l-lg border border-r-0 border-border bg-canvas px-3 text-sm text-muted">+62</span>
-            <input name="phone" required className="w-full rounded-r-lg border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent-soft" />
+            <input
+            name="phone"
+            required
+            type="tel"
+            inputMode="numeric"
+            maxLength={14}
+            placeholder="812345678"
+            pattern="(?:\+?62|0)?8[1-9][0-9]{6,10}"
+            title="Masukkan nomor HP yang valid (contoh: 812345678)"
+            onInput={(e) => {
+                e.currentTarget.value = e.currentTarget.value.replace(/[^\d]/g, '')
+                }}
+                className="w-full rounded-r-lg border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent-soft"
+            />
             </div>
+            <p className="text-[11px] text-muted">Contoh: 812345678, 08123456789, atau 6281234567890</p>
             </div>
             <div className="space-y-1.5">
             <label className="text-xs font-medium uppercase tracking-wide text-muted">Tanggal Lahir</label>
@@ -157,8 +169,8 @@ export function RegistrationForm({
             <h2 className="text-sm font-semibold text-ink">Metode Pembayaran</h2>
             <p className="mt-1 text-xs text-muted">Pembayaran diproses aman melalui payment gateway</p>
             </div>
-            {snapToken && registrationId && accessCode && (
-                <SnapEmbed snapToken={snapToken} registrationId={registrationId} accessCode={accessCode} />
+            {registrationId && accessCode && (
+                <PaymentFlow registrationId={registrationId} accessCode={accessCode} />
             )}
             </div>
         )}

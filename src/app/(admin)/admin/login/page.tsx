@@ -12,16 +12,6 @@ export default async function LoginPage({
     return (
         <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
         <div className="w-full max-w-sm space-y-6">
-        {/* Logo */}
-        <div className="flex justify-center">
-        <Image
-        src="/run.jpeg"
-        alt="Thamrin Run"
-        width={96}
-        height={96}
-        className="h-24 w-24"
-        />
-        </div>
 
         {/* Card */}
         <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
